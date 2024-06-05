@@ -53,10 +53,6 @@ Baixe e instale o Herd a partir do site oficial.
 Siga as instruções de instalação específicas para o seu sistema operacional.
 Configuração do Herd:
 
-### Adicione o projeto ao Herd. No diretório do projeto, execute:
-```
-herd add .
-```
 ### Configure a URL do projeto no Herd:
 ```
 herd link http://inertia-vue-crud-management.test
@@ -71,23 +67,24 @@ Abra o navegador e acesse a URL configurada:
 ```
 http://inertia-vue-crud-management.test
 ```
-Estrutura do Projeto
+## Estrutura do Projeto
 
 Frontend: InertiaJS e Vue3
 Backend: Laravel 11
 Banco de Dados: SQLite
-Funcionalidades
 
-Gerenciamento de Alunos:
+## Funcionalidades
+
+### Gerenciamento de Alunos:
 Criar, Ler, Atualizar e Excluir alunos.
-Gerenciamento de Regras de Acesso:
+### Gerenciamento de Regras de Acesso:
 Criar, Ler, Atualizar e Excluir regras de acesso para diferentes perfis de usuário.
 
-Contribuição
+## Contribuição
 
 Se você deseja contribuir para este projeto, por favor siga as diretrizes de contribuição e envie um Pull Request.
 
-Licença
+## Licença
 
 Este projeto está licenciado sob a MIT License.
 
