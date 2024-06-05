@@ -1,12 +1,31 @@
 import './bootstrap';
 import '../css/app.css';
+import 'vue-toastification/dist/index.css';
+import 'vue-select/dist/vue-select.css';
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import Toast from "vue-toastification";
+import { notifications } from "./Plugins/notifications";
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+const options = {
+    position: "top-right",
+    timeout: 5000,
+    closeOnclick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: true,
+    hideProgressBar: true,
+    closeButton: "button",
+    icon: true,
+    rtl: false,
+};
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -15,6 +34,8 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(Toast, options)
+            .use(notifications)
             .mount(el);
     },
     progress: {

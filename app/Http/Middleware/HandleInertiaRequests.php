@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Illuminate\Support\Arr;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -29,11 +30,35 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request?->user()?->loadMissing('roles.permissions');
+        $permissions = [];
+        if ($user) {
+            foreach ($user->roles as $role) {
+                foreach ($role->permissions as $singlePermission) {
+                    $permissions[] = $singlePermission->title;
+                }
+            }
+        }
+
+        /*  dd(collect($permissions)->unique()->map(function ($permission) {
+             return [
+                 $permission => true,
+             ];
+         })->collapse()->toArray()); */
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'message' => collect(Arr::only($request->session()->all(), ['success', 'warning', 'error', 'info']))->mapWithKeys(function ($body, $type) {
+                return ['type' => $type, 'body' => $body];
+            }),
+            'can' => $user ? collect($permissions)->unique()->map(function ($permission) {
+                return [
+                    $permission => true,
+                ];
+            })->collapse()->toArray() : [],
         ];
     }
 }
