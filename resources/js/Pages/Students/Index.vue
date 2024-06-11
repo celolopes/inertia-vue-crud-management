@@ -11,15 +11,24 @@ defineProps({
         type: Object,
         required: true,
     },
+    classes: {
+        type: Object,
+        required: true,
+    },
 });
 
 const page = usePage();
-let search = ref(usePage().props.search), pageNumber = ref(1);
+let search = ref(usePage().props.search),
+    class_id = ref(usePage().props.class_id ?? ""),
+    pageNumber = ref(1);
 let studentsUrl = computed(() => {
-    let url = new URL(route('students.index'));
+    let url = new URL(route("students.index"));
     url.searchParams.append("page", pageNumber.value);
     if (search.value) {
         url.searchParams.append("search", search.value);
+    }
+    if (class_id.value) {
+        url.searchParams.append("class_id", class_id.value);
     }
 
     return url.toString();
@@ -27,22 +36,27 @@ let studentsUrl = computed(() => {
 
 const updatedPageNumber = (link) => {
     pageNumber.value = link.url.split("=")[1];
+};
 
-}
+watch(
+    () => search.value,
+    (newSearch) => {
+        if (newSearch) {
+            pageNumber.value = 1;
+        }
+    }
+);
 
-watch(() => search.value, (newSearch) => {
-  if (newSearch) {
-    pageNumber.value = 1;
-  }
-});
-
-watch(() => studentsUrl.value, (updatedStudentsUrl) => {
-    router.visit(updatedStudentsUrl, {
-        preserveScroll: true,
-        preserveState: true,
-        replace: true,
-    });
- })
+watch(
+    () => studentsUrl.value,
+    (updatedStudentsUrl) => {
+        router.visit(updatedStudentsUrl, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    }
+);
 
 const deleteForm = useForm({});
 
@@ -58,15 +72,18 @@ const deleteStudent = (id) => {
         cancelButtonText: "Cancelar",
     }).then((result) => {
         if (result.isConfirmed) {
-            deleteForm.delete(route('students.destroy', id), {
+            deleteForm.delete(route("students.destroy", id), {
                 onFinish: () => {
-                    Swal.fire("Excluído!", "O estudante foi excluído.", "success");
-                }
+                    Swal.fire(
+                        "Excluído!",
+                        "O estudante foi excluído.",
+                        "success"
+                    );
+                },
             });
         }
     });
 };
-
 </script>
 
 <template>
@@ -99,7 +116,7 @@ const deleteStudent = (id) => {
                         </div>
                     </div>
 
-                    <div class="flex flex-col justify-between sm:flex-row mt-6">
+                    <div class="flex flex-col justify-start sm:flex-row mt-6">
                         <div class="relative text-sm text-gray-800 col-span-3">
                             <div
                                 class="absolute pl-2 left-0 top-0 bottom-0 flex items-center pointer-events-none text-gray-500"
@@ -116,6 +133,21 @@ const deleteStudent = (id) => {
                                 class="block rounded-lg border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             />
                         </div>
+                        <select
+                            v-model="class_id"
+                            name=""
+                            id=""
+                            class="block rounded-lg border-0 py-2 ml-5 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 sm:text-sm sm:leading-6"
+                        >
+                            <option value="">Filtro por Classe</option>
+                            <option
+                                :value="classe.id"
+                                v-for="classe in classes.data"
+                                :key="classe.id"
+                            >
+                                {{ classe.name }}
+                            </option>
+                        </select>
                     </div>
 
                     <div class="mt-8 flex flex-col">
@@ -179,7 +211,10 @@ const deleteStudent = (id) => {
                                             class="divide-y divide-gray-200 bg-white"
                                         >
                                             <tr
-                                                v-if="page.props.can.enxergar_alunos"
+                                                v-if="
+                                                    page.props.can
+                                                        .enxergar_alunos
+                                                "
                                                 v-for="student in students.data"
                                                 :key="student.id"
                                             >
@@ -218,18 +253,44 @@ const deleteStudent = (id) => {
                                                     class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
                                                 >
                                                     <Link
-                                                        :disabled="!page.props.can.editar_alunos"
-                                                        :href="page.props.can.editar_alunos ? route('students.edit', student.id) : '#'"
+                                                        :disabled="
+                                                            !page.props.can
+                                                                .editar_alunos
+                                                        "
+                                                        :href="
+                                                            page.props.can
+                                                                .editar_alunos
+                                                                ? route(
+                                                                      'students.edit',
+                                                                      student.id
+                                                                  )
+                                                                : '#'
+                                                        "
                                                         class="text-indigo-600 hover:text-indigo-900"
-                                                        :class="{'ml-2 text-indigo-200 hover:text-indigo-300 cursor-not-allowed' : !page.props.can.editar_alunos}"
+                                                        :class="{
+                                                            'ml-2 text-indigo-200 hover:text-indigo-300 cursor-not-allowed':
+                                                                !page.props.can
+                                                                    .editar_alunos,
+                                                        }"
                                                     >
                                                         Editar
                                                     </Link>
                                                     <button
-                                                        :disabled="!page.props.can.apagar_alunos"
-                                                        @click="deleteStudent(student.id)"
+                                                        :disabled="
+                                                            !page.props.can
+                                                                .apagar_alunos
+                                                        "
+                                                        @click="
+                                                            deleteStudent(
+                                                                student.id
+                                                            )
+                                                        "
                                                         class="ml-2 text-indigo-600 hover:text-indigo-900"
-                                                        :class="{'ml-2 text-indigo-200 hover:text-indigo-300 cursor-not-allowed' : !page.props.can.apagar_alunos}"
+                                                        :class="{
+                                                            'ml-2 text-indigo-200 hover:text-indigo-300 cursor-not-allowed':
+                                                                !page.props.can
+                                                                    .apagar_alunos,
+                                                        }"
                                                     >
                                                         Apagar
                                                     </button>
@@ -238,7 +299,11 @@ const deleteStudent = (id) => {
                                         </tbody>
                                     </table>
                                 </div>
-                                <Pagination v-if="page.props.can.enxergar_alunos" :data="students" :updatedPageNumber="updatedPageNumber" />
+                                <Pagination
+                                    v-if="page.props.can.enxergar_alunos"
+                                    :data="students"
+                                    :updatedPageNumber="updatedPageNumber"
+                                />
                             </div>
                         </div>
                     </div>

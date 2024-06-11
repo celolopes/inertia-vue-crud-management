@@ -16,23 +16,19 @@ class StudentController extends Controller
 {
     public function index(Request $request) {
         Gate::authorize('acesso_alunos');
-        $studentsQuery = Student::query();
-        $this->applySearch($studentsQuery, $request->search);
+        $studentsQuery = Student::search($request);
+        $classes = ClassesResource::collection(Classes::all());
+        //$this->applySearch($studentsQuery, $request->search);
         $students = StudentResource::collection(
             $studentsQuery->paginate(10)
         );
 
         return inertia('Students/Index', [
             'students' => $students,
+            'classes' => $classes,
+            'class_id' => $request->class_id?? '',
             'search' => $request->search ?? '',
         ]);
-    }
-
-    protected function applySearch($query, $search) {
-        return $query->where(function ($query) use ($search) {
-            $query->where('name', 'like', '%'.$search.'%');
-            $query->orWhere('email', 'like', '%'.$search.'%');
-        });
     }
 
     public function create() {
